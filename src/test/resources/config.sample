@@ -1,0 +1,11 @@
+# Make a copy or rename this file to "config.yaml" for testing locally.
+# Once you are satisfied with any changes, update the config.sample with
+# the test-ready values so that the tests will run properly in CI/CD
+################################################################################################
+##                              SERVICE SPECIFIC CONFIGS BEGIN                                ##
+################################################################################################
+
+serviceUrl: "https://dev-next.video-management.dev.amwell.systems"
+authServiceUrl: "http://localhost:8080"
+issUrl: "https://launcher.americanwell.com/ehr/iss"
+perfectoToken:

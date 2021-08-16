@@ -1,0 +1,9 @@
+.*
+!.gitlab-ci.yml
+!/.gitignore
+*.iml
+# this will likely be autotest/build/* for your project
+build/*
+reportportal.properties
+# this is for local testing only so ignore this config.yaml
+autotest/src/test/resources/config.yaml

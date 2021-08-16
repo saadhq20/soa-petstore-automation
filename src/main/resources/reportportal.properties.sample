@@ -1,0 +1,8 @@
+# Make a copy or rename this file to "reportportal.properties". Retrieve these values from your profile per your target project in Report Portal.
+rp.endpoint=http://reportportal.americanwell.com
+rp.uuid=
+rp.launch=
+rp.project=
+rp.description=
+rp.attributes=
+rp.skipped.issue=false

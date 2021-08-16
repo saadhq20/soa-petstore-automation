@@ -1,0 +1,230 @@
+plugins {
+    id 'java'
+    id 'maven'
+    id 'maven-publish'
+}
+
+def reportiumVersion = '2.3.1'
+sourceCompatibility = 11
+targetCompatibility = 11
+description = 'Project for end to end testing of the Swagger Petstore service'
+group = 'com.americanwell.autotest.soa.petstore'
+archivesBaseName = 'soa-petstore-automation'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://artifactory.americanwell.com/artifactory/libs-all' }
+    maven { url 'https://repo1.perfectomobile.com/public/repositories/maven' }
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compile
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    description "Build the javadoc jar"
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task createPom() {
+    description 'Build a pom.xml file for Artifactory'
+    pom {
+        project {
+            modelVersion '4.0.0'
+            groupId project.group
+            artifactId  archivesBaseName
+            version version
+        }
+    }.writeTo("$buildDir/pom.xml")
+}
+
+//build out the sources jar and the javadoc jar
+task autoJar(type: Jar, dependsOn: [javadocJar, createPom]) {
+    description 'Build the source jar, javadoc jar, and pom.xml file'
+    //include config file so we don't have to update all dependent repos separately
+    from 'src/test/resources/config.sample'
+    with jar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId group
+            artifactId archivesBaseName
+            version version
+            from components.java
+
+            artifact javadocJar
+        }
+    }
+}
+
+tasks.withType(Test) {
+    useTestNG()
+    scanForTestClasses = false
+
+    testLogging {
+        showStandardStreams = true
+        //log results to 'build/test-results' directory
+        exceptionFormat 'full'
+        events 'started', 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+    }
+    outputs.upToDateWhen {
+        false
+    }
+    //Command line arguments
+    systemProperty 'serviceUrl', System.getProperty('serviceUrl')
+    systemProperty 'rpBranch', System.getProperty('rpBranch')
+
+}
+
+//Project property that allows us to exclude tests as needed
+//e.g. `gradle test -PexcludeTests=**/PasswordHint*` will exclude tests in PasswordHintTest file
+test {
+    if (project.hasProperty('excludeTests')) {
+        exclude project.property('excludeTests')
+    }
+}
+
+dependencies {
+
+    compile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    compile group: 'org.yaml', name: 'snakeyaml', version: '1.24'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+    compile group: 'io.appium', name: 'java-client', version: '7.2.0'
+    compile group: 'javax.mail', name: 'mail', version: '1.4.7'
+    compile group: 'com.epam.reportportal', name: 'client-java', version: '5.0.11'
+    compile group: 'com.epam.reportportal', name: 'agent-java-testng', version: '5.0.7-TESTNG6'
+    compile group: 'com.epam.reportportal', name: 'logger-java-log4j', version: '5.0.1'
+    compile group: 'com.epam.reportportal', name: 'logger-java-logback', version: '5.0.3'
+    compile group: 'xerces', name: 'xercesImpl', version: '2.8.0'
+    compile group: 'org.json', name: 'json', version: '20200518'
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.12.1'
+    compile group: 'com.auth0', name: 'java-jwt', version: '3.10.3'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5'
+    compile group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+    compile group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.5'
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.12'
+    compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
+    compile group: 'com.perfecto.reporting-sdk', name: 'reportium-java', version: reportiumVersion
+    compile group: 'com.perfecto.reporting-sdk', name: 'reportium-import-java', version: reportiumVersion
+    compile group: 'com.perfecto.reporting-sdk', name: 'reportium-testng', version: reportiumVersion
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.12'
+
+    testCompile group: 'org.testng', name: 'testng', version: '7.3.0'
+    testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.12'
+
+}
+
+task testServiceRegression(type: Test) {
+    description 'Runs suite of service regression tests'
+    options.suites('src/test/resources/suites/service/regression.xml')
+}
+
+ext.writeFile = { String filePath, ArrayList<String> lines ->
+    PrintWriter writer = new PrintWriter(new FileWriter(filePath))
+    int count = 1
+    int lastLine = lines.size()
+
+    for (String line : lines) {
+        if (count == lastLine) {
+            writer.print(line)
+        } else {
+            writer.println(line)
+        }
+        count++
+    }
+    writer.close()
+}
+
+task copyConfig(type: Copy) {
+    description 'Copy config.sample and rename it to config.yaml if file does not exist'
+    String fromDir = 'src/test/resources'
+    String toDir = fromDir
+    String fileName = 'config.sample'
+    String newFileName = 'config.yaml'
+
+    File file = new File(String.format('%s/%s', toDir, newFileName))
+    if (!file.exists()) {
+        println(String.format('Copying file "%s" and renaming to "%s"...', fileName, newFileName))
+        from fromDir
+        into toDir
+        include(fileName)
+        rename(fileName, newFileName)
+    } else {
+        println(String.format('File "%s" already exists! Skip copying...', newFileName))
+    }
+}
+
+task copyReportPortal() {
+    description 'Copy reportportal.properties.sample and rename to reportportal.properties. This will overwrite an existing file'
+    doLast() {
+        copy {
+            String fromDir = 'src/main/resources'
+            String toDir = fromDir
+            String fileName = 'reportportal.properties.sample'
+            String newFileName = 'reportportal.properties'
+
+            println(String.format('Copying file "%s" and renaming to "%s"...', fileName, newFileName))
+            from fromDir
+            into toDir
+            include(fileName)
+            rename(fileName, newFileName)
+        }
+    }
+}
+
+task buildCIReportPortal(dependsOn: copyReportPortal) {
+    description 'Build reportportal.properties file for Bamboo CI/CD run. Overwrites pre-existing configurations for a clean run'
+    doLast() {
+        println('Building reportportal.properties for CI/CD run...')
+        String filePath = 'src/main/resources/reportportal.properties'
+        BufferedReader reader = new BufferedReader(new FileReader(filePath))
+        ArrayList<String> lines = new ArrayList<>()
+
+        //read the file and add/modify the lines from file
+        String lineIn
+        while ((lineIn = reader.readLine()) != null) {
+            if (lineIn.contains('rp.uuid=')) {
+                lineIn = String.format('rp.uuid=%s', System.getProperty('rpUUID'))
+                println(lineIn)
+                lines.add(lineIn)
+            } else if (lineIn.contains('rp.launch=')) {
+                lineIn = String.format('rp.launch=%s', System.getProperty('rpLaunch'))
+                println(lineIn)
+                lines.add(lineIn)
+            } else if (lineIn.contains('rp.project=')) {
+                lineIn = String.format('rp.project=%s', System.getProperty('rpProject'))
+                println(lineIn)
+                lines.add(lineIn)
+            } else if (lineIn.contains('rp.description=')) {
+                lineIn = String.format('rp.description=%s', System.getProperty('rpDescription'))
+                println(lineIn)
+                lines.add(lineIn)
+            } else if (lineIn.contains('rp.attributes=')) {
+                lineIn = String.format('rp.attributes=branch:%s;server:%s', System.getProperty('rpBranch'), System.getProperty('serviceUrl'))
+                println(lineIn)
+                lines.add(lineIn)
+            } else if (lineIn.contains('rp.skipped.issue=')) {
+                lineIn = String.format('rp.skipped.issue=%s', "false")
+                println(lineIn)
+                lines.add(lineIn)
+            } else {
+                lines.add(lineIn)
+            }
+        }
+        reader.close()
+
+        //write the file
+        writeFile(filePath, lines)
+        println('Finished writing "' + filePath + '" file...')
+    }
+
+}
