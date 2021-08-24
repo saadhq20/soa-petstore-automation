@@ -1,3 +1,37 @@
+# Coding Exercise
+The live paired-programming exercise will examine how you work in a development environment. You will contribute code to create automated tests for the specified API endpoints. The testing framework will be provided for you in this repository. The following libraries (of main use) in this Java test framework are: [TestNG](https://testng.org/doc/index.html), [Gradle](https://docs.gradle.org/current/userguide/userguide.html), and [REST-Assured](https://rest-assured.io/).
+
+First and foremost, clone the repository to your local machine. Next, review the [Swaggerhub Petstore API](https://petstore3.swagger.io/). 
+
+During live session, you will automate the following endpoints:
+* POST /pet – Create a pet
+* GET /pet/{petId} – Get the pet by id
+* POST /pet/{petId} – Update the pet by id
+* DELETE /pet/{petId} – Delete the pet
+
+The assertions required:
+* POST /pet
+  * status code is 200
+  * id from JSON response is same as payload
+  * name from JSON response is same as payload
+* GET /pet/{petId} – Get the pet by id
+  * status code is 200
+  * id from JSON response is same as request
+  * name from JSON response is expected from create request
+* POST /pet/{petId} – Update the pet by id
+  * status code is 200
+  * id from JSON response is same as request
+  * name from JSON response is expected from update payload
+* DELETE /pet/{petId} – Delete the pet
+  * status code is 200
+  * pet no longer exists when calling GET /pet/{petId}
+
+### NOTES:
+* Test framework will be set up
+* Use REST-Assured library to automate these tests
+* Add these test files to the regression.xml file to run via Gradle task
+
+
 # SOA Functional Test Automation Starter Project (PLEASE UPDATE THIS README FOR YOUR PROJECT)
 @author: chan.suom@americanwell.com
 
