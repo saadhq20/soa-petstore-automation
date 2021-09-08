@@ -9,17 +9,12 @@
 
 package com.americanwell.autotest.soa.petstore;
 
-import com.americanwell.autotest.soa.petstore.service.resource.HealthResource;
 import com.americanwell.autotest.soa.petstore.utils.Config;
-import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 
 import java.io.IOException;
-
-import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * @author chan.suom on 8/12/20
@@ -40,16 +35,16 @@ public class BaseTest {
  	@BeforeSuite
 	public void baseTestStart() throws Exception {
 
-		log.info("This is the BaseTest BeforeSuite...");
-		String statusUp = "UP";
-		HealthResource healthResource = new HealthResource();
-		Response resp = healthResource.getHealthCheck();
-
-		log.info("Asserting that /healthcheck response status code comes back \"{}\"...", HTTP_OK);
-		Assert.assertEquals(resp.statusCode(), HTTP_OK, "Status code is NOT " + HTTP_OK + ".  Skipping all tests...");
-
-		log.info("Asserting that /healthcheck status is \"{}\"!", statusUp);
-		Assert.assertEquals(healthResource.getStatus(), statusUp, "Service status is not " + statusUp + ".  Skipping all tests...");
+//		log.info("This is the BaseTest BeforeSuite...");
+//		String statusUp = "UP";
+//		HealthResource healthResource = new HealthResource();
+//		Response resp = healthResource.getHealthCheck();
+//
+//		log.info("Asserting that /healthcheck response status code comes back \"{}\"...", HTTP_OK);
+//		Assert.assertEquals(resp.statusCode(), HTTP_OK, "Status code is NOT " + HTTP_OK + ".  Skipping all tests...");
+//
+//		log.info("Asserting that /healthcheck status is \"{}\"!", statusUp);
+//		Assert.assertEquals(healthResource.getStatus(), statusUp, "Service status is not " + statusUp + ".  Skipping all tests...");
 
 	}
 

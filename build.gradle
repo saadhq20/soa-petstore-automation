@@ -14,8 +14,9 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     maven { url 'https://jitpack.io' }
-    maven { url 'https://artifactory.americanwell.com/artifactory/libs-all' }
+  //  maven { url 'https://artifactory.americanwell.com/artifactory/libs-all' }
     maven { url 'https://repo1.perfectomobile.com/public/repositories/maven' }
+    mavenCentral()
 }
 
 javadoc {
@@ -63,7 +64,10 @@ publishing {
 }
 
 tasks.withType(Test) {
-    useTestNG()
+    useTestNG(){
+        useDefaultListeners = true
+        suites 'src/test/regression.xml' //location regression.xml
+    }
     scanForTestClasses = false
 
     testLogging {
@@ -91,7 +95,7 @@ test {
 
 dependencies {
 
-    compile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
+    compile group: 'io.rest-assured', name: 'rest-assured', version: '4.4.0'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
@@ -116,6 +120,8 @@ dependencies {
     compile group: 'com.perfecto.reporting-sdk', name: 'reportium-java', version: reportiumVersion
     compile group: 'com.perfecto.reporting-sdk', name: 'reportium-import-java', version: reportiumVersion
     compile group: 'com.perfecto.reporting-sdk', name: 'reportium-testng', version: reportiumVersion
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.12'
 
     testCompile group: 'org.testng', name: 'testng', version: '7.3.0'
